@@ -15,6 +15,7 @@ const getProduct = (req, res) => {
             make.pFin.findItemDetails(make.URL(URL, site), (err, details) => {
                 Product.create({
                     SKU: make.SKU(URL, site),
+                    URL: make.URL(URL, site),
                     prices: [{
                         date: moment().toDate(),
                         price: details.price
