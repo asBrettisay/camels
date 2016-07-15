@@ -1,4 +1,5 @@
-const moment = require(`moment`),
+const make = require(`../priceHelpers.js`),
+    moment = require(`moment`),
     mongoose = require(`mongoose`);
 
 const productSchema = new mongoose.Schema({
@@ -29,5 +30,20 @@ const productSchema = new mongoose.Schema({
         default: moment().toDate()
     }
 });
+
+// check if we can remote the self = this by using fat arrow funtion
+productSchema.methods.updatePrice = function() {
+    var self = this;
+    make.pFin.findItemDetails(make.URL(self.SKU, self.site), (err, details) => {
+        if (err) {
+            return err;
+        }
+        self.prices.push({
+            date: moment().toDate(),
+            price: details.price
+        });
+        return self.save((saveErr, saveRes) => saveRes);
+    });
+};
 
 module.exports = mongoose.model('Product', productSchema);
