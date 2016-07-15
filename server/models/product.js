@@ -21,11 +21,11 @@ const productSchema = new mongoose.Schema({
     category: String,
     site: String,
     createdAt: {
-        type: {},
+        type: Date,
         default: moment().toDate()
     },
     updatedAt: {
-        type: {},
+        type: Date,
         default: moment().toDate()
     }
 });

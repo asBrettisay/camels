@@ -12,24 +12,26 @@ agenda.define(`Update prices`, {
     priority: `medium`,
     concurrency: 10
 }, function(job, done) {
-    Product.findOne({
+    Product.find({
         updatedAt: {
             $lt: moment().subtract(20, `hours`).toDate()
         }
-    }, (err, product) => {
-        if (err || !product) {
+    }, (err, products) => {
+        if (err || !products.length) {
             return err;
         }
-        pFin.findItemDetails(makeURL(product.SKU, product.site), (err, details) => {
-            if (err) {
-                return err;
-            }
-            product.updatedAt = moment().toDate();
-            product.prices.push({
-                price: details.price,
-                date: moment().toDate()
+        products.forEach(product => {
+            pFin.findItemDetails(makeURL(product.SKU, product.site), (err, details) => {
+                if (err) {
+                    return err;
+                }
+                product.updatedAt = moment().toDate();
+                product.prices.push({
+                    price: details.price,
+                    date: moment().toDate()
+                });
+                product.save((saveErr, saveRes) => saveRes);
             });
-            product.save((saveErr, saveRes) => saveRes);
         });
     });
     done();
@@ -55,9 +57,9 @@ const makeURL = (URL, site) => {
 const makeSKU = (URL, site) => {
     switch (site) {
         case `amazon`:
-            return URL.match(/(\/)([A-Z0-9]{10})($|\?|\/)/)[2];
+            return URL.length === 10 ? URL : URL.match(/(\/)([A-Z0-9]{10})($|\?|\/)/)[2];
         case `newegg`:
-            return URL.match(/(\?Item=)([A-Z0-9]{15})(&)/)[2];
+            return URL.length === 15 ? URL : URL.match(/(\?Item=)([A-Z0-9]{15})(&)/)[2];
     }
 };
 
@@ -75,7 +77,7 @@ module.exports = {
                     Product.create({
                         SKU: makeSKU(URL, site),
                         prices: [{
-                            date: new Date(),
+                            date: moment().toDate(),
                             price: details.price
                         }],
                         name: details.name,

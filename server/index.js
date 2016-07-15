@@ -9,7 +9,7 @@ app.use(bodyParser.json());
 
 mongoose.connect(`mongodb://localhost/Camels`);
 const db = mongoose.connection;
-db.on(`error`, (err) => console.log(err));
+db.on(`error`, err => console.log(err));
 db.once(`open`, () => console.log(`Mongoose working!`));
 
 app.post(`/api/product`, priceCon.getProduct);
