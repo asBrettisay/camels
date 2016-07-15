@@ -11,6 +11,32 @@ angular.module('app')
   var height = 500 - margin.top - margin.bottom;
   var width = 960 - margin.left - margin.right;
 
+  var Tip = function(div, x, y) {
+    function show(d) {
+      div.html(
+        '<strong>Price:</strong>' + d.price + '<br>' +
+        '<strong>Date:</strong>'+ d.date
+      )
+      .style('background', 'rgba(0, 0, 0, 0.3)')
+      .style('opacity', '1')
+      .style('left', x(d.date)+ margin.left + 'px')
+      .style('top', y(d.price)+ margin.top - 50 + 'px' )
+
+      console.log(d);
+      console.log(x(d.date));
+    }
+
+    function hide() {
+      div.style('background', 'rgba(0, 0, 0, 0)')
+          .style('opacity', '0');
+    }
+
+    return {
+      show: show,
+      hide: hide
+    }
+  }
+
   return {
     restrict: 'E',
     template: '<svg height='+500+' width='+960+'></div>',
@@ -18,7 +44,6 @@ angular.module('app')
       data: '='
     },
     controller: function($scope) {
-      console.log($scope.data);
     },
     link: function(scope, elem, attr) {
 
@@ -35,10 +60,7 @@ angular.module('app')
 
       var y = d3.scaleLinear()
           .range([height, 0])
-          .domain([
-            0,
-            d3.max(scope.data, function(d) { return d.price })
-          ])
+          .domain([0, d3.max(scope.data, function(d) { return d.price; })])
 
       var xAxis = d3.axisBottom()
           .scale(
@@ -50,19 +72,37 @@ angular.module('app')
       var yAxis = d3.axisLeft()
           .scale(y)
 
-      var area = d3.area()
+      var line = d3.line()
           .x(function(d) { return x(d.date); })
-          .y0(height)
-          .y1(function(d) { return y(d.price)})
+          .y(function(d) { return y(d.price)})
+
+
 
       var svg = d3.select(elem.find('svg')[0])
         .append('g')
           .attr('transform', 'translate('+ margin.left+','+margin.right+')')
 
+      var tip = Tip(
+        d3.select(elem.find('svg')[0].parentElement).append('div')
+          .attr('class', 'd3-tooltip'),
+          x,y
+        )
+
       svg.append('path')
           .datum(scope.data)
-          .attr('class', 'area')
-          .attr('d', area);
+          .attr('class', 'line')
+          .attr('d', line);
+
+      svg.selectAll('circle')
+          .data(scope.data)
+          .enter().append('circle')
+          .attr('class', 'circle')
+          .attr('cx', function(d) { return x(d.date)})
+          .attr('cy', function(d) { return y(d.price)})
+          .attr('r', 3)
+          .on('mouseover', tip.show)
+          .on('mouseout', tip.hide)
+
 
       svg.append('g')
           .attr('class', 'x axis')
