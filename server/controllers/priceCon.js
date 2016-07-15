@@ -9,7 +9,7 @@ const getProduct = (req, res) => {
         site
     } = req.body;
     Product.findOne({
-        SKU: makeSKU(URL, site)
+        SKU: make.SKU(URL, site)
     }, (err, product) => {
         if (!product) {
             make.pFin.findItemDetails(make.URL(URL, site), (err, details) => {
