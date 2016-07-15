@@ -61,12 +61,6 @@ const makeSKU = (URL, site) => {
     }
 };
 
-const getprice = (URL, site) => {
-    pFin.findItemDetails(makeURL(URL, site), (err, details) => {
-        return err ? err : details;
-    });
-};
-
 module.exports = {
     getProduct: (req, res) => {
         let {
